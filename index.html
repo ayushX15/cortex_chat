@@ -1,0 +1,652 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cortex Chat</title>
+    <style>
+        :root {
+            --primary-color: #10a37f;
+            --bg-color: #1a1a2e;
+            --message-bg: #2a2a3e;
+            --user-message-bg: #353569;
+            --border-color: #444460;
+            --text-color: #e5e7eb;
+            --secondary-text: #9ca3af;
+            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2), 0 2px 4px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            display: flex;
+            flex-direction: row;
+            height: 100vh;
+        }
+
+        .sidebar {
+            width: 300px;
+            background-color: #1a1a1a;
+            display: flex;
+            flex-direction: column;
+            border-right: 1px solid var(--border-color);
+        }
+
+        .brand {
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .logo {
+            width: 40px;
+            height: 40px;
+            background-color: #10a37f;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 22px;
+        }
+
+        .brand h1 {
+            font-size: 1.5rem;
+            color: var(--text-color);
+            font-weight: 600;
+        }
+
+        .chat-list {
+            padding: 20px;
+            flex: 1;
+            overflow-y: auto;
+        }
+
+        .new-chat-btn {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 16px;
+            background-color: #2a2a2a;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            color: var(--text-color);
+            cursor: pointer;
+            margin-bottom: 20px;
+            transition: background-color 0.2s;
+        }
+
+        .new-chat-btn:hover {
+            background-color: #333333;
+        }
+
+        .sidebar-footer {
+            padding: 15px;
+            border-top: 1px solid var(--border-color);
+            font-size: 0.9rem;
+            color: var(--secondary-text);
+            text-align: center;
+        }
+
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background-color: #2a2a3e;
+        }
+
+        .header {
+            padding: 16px 24px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background-color: #2a2a3e;
+        }
+
+        .header h2 {
+            font-size: 1.2rem;
+            font-weight: 500;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .header-btn {
+            background: none;
+            border: none;
+            color: var(--secondary-text);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            padding: 5px;
+            border-radius: 4px;
+            transition: background-color 0.2s;
+        }
+
+        .header-btn:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+
+        .chat-container {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+            scroll-behavior: smooth;
+        }
+
+        .message-wrapper {
+            display: flex;
+            align-items: flex-start;
+            gap: 16px;
+            max-width: 90%;
+            margin: 0 auto;
+            width: 100%;
+            padding: 10px 0;
+        }
+
+        .avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            flex-shrink: 0;
+        }
+
+        .user-avatar {
+            background-color: #64748b;
+        }
+
+        .bot-avatar {
+            background-color: #10a37f;
+        }
+
+        .message {
+            padding: 16px 20px;
+            border-radius: 12px;
+            line-height: 1.6;
+            animation: fadeIn 0.3s ease;
+            flex: 1;
+        }
+
+        .user-message {
+            background-color: var(--user-message-bg);
+        }
+
+        .bot-message {
+            background-color: var(--message-bg);
+        }
+
+        .input-area {
+            background-color: #2a2a3e;
+            padding: 16px 24px;
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .message-input-container {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        #message-input {
+            flex: 1;
+            padding: 14px 18px;
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            font-size: 1rem;
+            outline: none;
+            resize: none;
+            max-height: 200px;
+            overflow-y: auto;
+            background-color: #3a3a4e;
+            color: var(--text-color);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+
+        #message-input:focus {
+            border-color: #10a37f;
+            box-shadow: 0 0 0 2px rgba(16, 163, 127, 0.2);
+        }
+
+        #send-button {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            background-color: transparent;
+            color: var(--text-color);
+            border: none;
+            border-radius: 50%;
+            width: 36px;
+            height: 36px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background-color 0.2s;
+        }
+
+        #send-button:hover {
+            background-color: rgba(16, 163, 127, 0.2);
+        }
+
+        #send-button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .disclaimer {
+            text-align: center;
+            color: var(--secondary-text);
+            font-size: 0.8rem;
+            margin-top: 10px;
+        }
+
+        .copyright {
+            text-align: center;
+            color: var(--secondary-text);
+            font-size: 0.8rem;
+            margin-top: 10px;
+        }
+
+        .streaming-text {
+            overflow: hidden;
+            border-right: 2px solid var(--primary-color);
+            animation: blink 0.75s step-end infinite;
+        }
+
+        @keyframes blink {
+            from, to { border-color: transparent; }
+            50% { border-color: var(--primary-color); }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        pre {
+            background-color: #1a1a2e;
+            padding: 16px;
+            border-radius: 8px;
+            overflow-x: auto;
+            margin: 12px 0;
+            border: 1px solid #444460;
+        }
+
+        code {
+            font-family: 'Fira Code', Consolas, Monaco, 'Andale Mono', monospace;
+            font-size: 0.9em;
+            color: #e5e7eb;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .error-message {
+            color: #ff6b6b;
+            background-color: rgba(255, 107, 107, 0.1);
+            padding: 12px;
+            border-radius: 8px;
+            margin: 12px 0;
+            text-align: center;
+            border: 1px solid rgba(255, 107, 107, 0.3);
+        }
+    </style>
+</head>
+<body>
+    <div class="sidebar">
+        <div class="brand">
+            <div class="logo">C</div>
+            <h1>Cortex Chat</h1>
+        </div>
+        <div class="chat-list">
+            <div class="new-chat-btn">
+                <span>New chat</span>
+                <span>+</span>
+            </div>
+        </div>
+        <div class="sidebar-footer">
+            <div>Cortex Chat v1.0</div>
+            <div>Powered by LLaMA</div>
+        </div>
+    </div>
+    <div class="main-content">
+        <div class="header">
+            <h2>New Conversation</h2>
+            <div class="header-actions">
+                <button class="header-btn" id="refresh-btn">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M23 4v6h-6"></path>
+                        <path d="M1 20v-6h6"></path>
+                        <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10"></path>
+                        <path d="M20.49 15a9 9 0 0 1-14.85 3.36L1 14"></path>
+                    </svg>
+                </button>
+                <button class="header-btn" id="share-btn">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"></path>
+                        <polyline points="16 6 12 2 8 6"></polyline>
+                        <line x1="12" y1="2" x2="12" y2="15"></line>
+                    </svg>
+                </button>
+                <button class="header-btn" id="copy-btn">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                        <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                    </svg>
+                </button>
+                <button class="header-btn" id="close-btn">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
+                </button>
+            </div>
+        </div>
+        <div class="chat-container" id="chat-container">
+            <div class="message-wrapper">
+                <div class="avatar bot-avatar">C</div>
+                <div class="message bot-message">
+                    Hello! I'm your Cortex assistant. How can I help you today?
+                </div>
+            </div>
+        </div>
+        <div class="input-area">
+            <div class="message-input-container">
+                <textarea id="message-input" placeholder="Message Cortex..." rows="1"></textarea>
+                <button id="send-button">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="22" y1="2" x2="11" y2="13"></line>
+                        <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                    </svg>
+                </button>
+            </div>
+            <div class="disclaimer">Cortex may produce inaccurate information about people, places, or facts.</div>
+            <div class="copyright">© 2025 Cortex AI</div>
+        </div>
+    </div>
+
+    <script>
+        const chatContainer = document.getElementById('chat-container');
+        const messageInput = document.getElementById('message-input');
+        const sendButton = document.getElementById('send-button');
+        const newChatBtn = document.querySelector('.new-chat-btn');
+        const refreshBtn = document.getElementById('refresh-btn');
+        const closeBtn = document.getElementById('close-btn');
+        
+        let isWaitingForResponse = false;
+        let currentStreamingMessage = null;
+        let messageCache = {};
+
+        // Auto-resize textarea
+        messageInput.addEventListener('input', function() {
+            this.style.height = 'auto';
+            this.style.height = (this.scrollHeight) + 'px';
+            if (this.scrollHeight > 200) {
+                this.style.overflowY = 'scroll';
+            } else {
+                this.style.overflowY = 'hidden';
+            }
+        });
+
+        // Send message on enter (without shift)
+        messageInput.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendMessage();
+            }
+        });
+
+        sendButton.addEventListener('click', sendMessage);
+        
+        // New chat button functionality
+        newChatBtn.addEventListener('click', () => {
+            // Clear chat history
+            while (chatContainer.children.length > 1) {
+                chatContainer.removeChild(chatContainer.lastChild);
+            }
+            document.querySelector('.header h2').textContent = 'New Conversation';
+        });
+        
+        // Refresh button functionality
+        refreshBtn.addEventListener('click', () => {
+            // Refresh the current conversation (reload the page)
+            location.reload();
+        });
+        
+        // Close button functionality (minimalistic implementation)
+        closeBtn.addEventListener('click', () => {
+            alert('Close functionality would be implemented with backend support');
+        });
+
+        function createMessageElement(isUser) {
+            const wrapperDiv = document.createElement('div');
+            wrapperDiv.classList.add('message-wrapper');
+            
+            const avatarDiv = document.createElement('div');
+            avatarDiv.classList.add('avatar');
+            avatarDiv.classList.add(isUser ? 'user-avatar' : 'bot-avatar');
+            avatarDiv.textContent = isUser ? 'U' : 'C';
+            
+            const messageDiv = document.createElement('div');
+            messageDiv.classList.add('message');
+            messageDiv.classList.add(isUser ? 'user-message' : 'bot-message');
+            
+            wrapperDiv.appendChild(avatarDiv);
+            wrapperDiv.appendChild(messageDiv);
+            
+            return { wrapper: wrapperDiv, message: messageDiv };
+        }
+
+        function escapeHtml(unsafe) {
+            return unsafe
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+        }
+
+        function formatText(text) {
+            // Handle code blocks with ```
+            let formattedText = text;
+            const codeBlockRegex = /```([\s\S]*?)```/g;
+            formattedText = formattedText.replace(codeBlockRegex, function(match, codeContent) {
+                return `<pre><code>${escapeHtml(codeContent)}</code></pre>`;
+            });
+            
+            // Handle line breaks
+            formattedText = formattedText.replace(/\n/g, '<br>');
+            
+            return formattedText;
+        }
+
+        function showErrorMessage(message) {
+            const { wrapper, message: messageDiv } = createMessageElement(false);
+            messageDiv.classList.add('error-message');
+            messageDiv.textContent = message;
+            chatContainer.appendChild(wrapper);
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+        }
+
+        function createStreamingMessageElement() {
+            const elements = createMessageElement(false);
+            elements.message.classList.add('streaming-text');
+            chatContainer.appendChild(elements.wrapper);
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+            return elements.message;
+        }
+
+        async function sendMessage() {
+            const message = messageInput.value.trim();
+            if (message === '' || isWaitingForResponse) return;
+            
+            // Add user message to chat
+            const { message: userMessageDiv } = createMessageElement(true);
+            userMessageDiv.innerHTML = formatText(message);
+            chatContainer.appendChild(userMessageDiv.parentElement);
+            
+            // Clear input
+            messageInput.value = '';
+            messageInput.style.height = 'auto';
+            messageInput.focus();
+            
+            // Create streaming message container
+            currentStreamingMessage = createStreamingMessageElement();
+            
+            // Disable send button
+            sendButton.disabled = true;
+            isWaitingForResponse = true;
+            
+            try {
+                // Check if response is in cache
+                if (messageCache[message]) {
+                    // Use cached response but simulate streaming
+                    await streamResponse(messageCache[message]);
+                } else {
+                    // Request response from server
+                    const startTime = performance.now();
+                    const response = await fetch('/chat', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ message: message })
+                    });
+                    
+                    if (!response.ok) {
+                        throw new Error(`Error: ${response.status}`);
+                    }
+                    
+                    const data = await response.json();
+                    const endTime = performance.now();
+                    
+                    // Cache the response
+                    messageCache[message] = data.response;
+                    
+                    // Stream the response (with faster timing if response was quick)
+                    const responseTime = endTime - startTime;
+                    await streamResponse(data.response, responseTime < 500);
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                showErrorMessage('Failed to connect to the AI model. Please check your server connection.');
+                if (currentStreamingMessage) {
+                    currentStreamingMessage.parentElement.remove();
+                    currentStreamingMessage = null;
+                }
+            } finally {
+                // Re-enable send button
+                sendButton.disabled = false;
+                isWaitingForResponse = false;
+                
+                // Remove streaming class when done
+                if (currentStreamingMessage) {
+                    currentStreamingMessage.classList.remove('streaming-text');
+                    currentStreamingMessage = null;
+                }
+                
+                // Scroll to bottom
+                chatContainer.scrollTop = chatContainer.scrollHeight;
+            }
+        }
+
+        async function streamResponse(fullResponse, isFast = false) {
+            // Process and identify code blocks to handle them specially
+            const segments = [];
+            let lastIndex = 0;
+            const codeBlockRegex = /```([\s\S]*?)```/g;
+            let match;
+            
+            while ((match = codeBlockRegex.exec(fullResponse)) !== null) {
+                // Add text before code block
+                if (match.index > lastIndex) {
+                    segments.push({
+                        type: 'text',
+                        content: fullResponse.substring(lastIndex, match.index)
+                    });
+                }
+                
+                // Add code block
+                segments.push({
+                    type: 'code',
+                    content: match[0]
+                });
+                
+                lastIndex = match.index + match[0].length;
+            }
+            
+            // Add remaining text after last code block
+            if (lastIndex < fullResponse.length) {
+                segments.push({
+                    type: 'text',
+                    content: fullResponse.substring(lastIndex)
+                });
+            }
+            
+            // If no code blocks were found, add the entire response as text
+            if (segments.length === 0) {
+                segments.push({
+                    type: 'text',
+                    content: fullResponse
+                });
+            }
+            
+            // Stream each segment with appropriate handling
+            let streamedContent = '';
+            for (const segment of segments) {
+                if (segment.type === 'code') {
+                    // Stream code blocks as whole units
+                    await new Promise(resolve => setTimeout(resolve, isFast ? 100 : 200)); // Faster pause before code block
+                    streamedContent += formatText(segment.content);
+                    currentStreamingMessage.innerHTML = streamedContent;
+                    chatContainer.scrollTop = chatContainer.scrollHeight;
+                    await new Promise(resolve => setTimeout(resolve, isFast ? 150 : 300)); // Faster pause after code block
+                } else {
+                    // Stream text character by character with faster speeds
+                    const chunkSize = isFast ? 4 : 2; // Process more characters at once for faster display
+                    for (let i = 0; i < segment.content.length; i += chunkSize) {
+                        const chunk = segment.content.substring(i, i + chunkSize);
+                        streamedContent += chunk;
+                        // Handle line breaks in the streaming display
+                        currentStreamingMessage.innerHTML = formatText(streamedContent);
+                        chatContainer.scrollTop = chatContainer.scrollHeight;
+                        
+                        // Random delay between characters for realistic typing effect, but faster
+                        const delay = isFast ? 
+                            Math.floor(Math.random() * 8) + 2 : // Very fast
+                            Math.floor(Math.random() * 15) + 3;  // Fast but readable
+                        await new Promise(resolve => setTimeout(resolve, delay));
+                    }
+                }
+            }
+        }
+    </script>
+</body>
+</html>
