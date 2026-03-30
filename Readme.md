@@ -24,5 +24,3 @@ It is designed to provide natural, human-like conversations through a clean and 
 - Deploy on cloud with GPU (AWS / GCP)
 - Add speech-to-text / text-to-speech
 
-
-Made with ❤️ by Ankush & Anirudh
